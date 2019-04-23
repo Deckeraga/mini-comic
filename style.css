@@ -8,6 +8,12 @@
     -ms-user-select: none;
 }
 
+.toolbar {
+    height: 40px;
+    background-color: #1e1e1e;
+    -webkit-app-region: drag;
+}
+
 html, body, .page-holder {
     height: 100%;
     width: 100%;

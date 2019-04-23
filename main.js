@@ -12,7 +12,7 @@ function createWindow () {
     //width: 800,
     minHeight: 700,
     minWidth: 700,
-    // transparent: true, 
+    titleBarStyle: 'hiddenInset',
     // frame: false,
     webPreferences: {
       nodeIntegration: true
