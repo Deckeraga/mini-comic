@@ -6,10 +6,15 @@
     <link rel="stylesheet" type="text/css" href="./style.css">
   </head>
   <body>
-    <div class="toolbar"></div>
+    <div class="toolbar">
+      <button id="single-page">Single page</button>
+      <button id="double-page">double page</button>
+    </div>
     <div class="page-holder">
-      <img class="page" src="./test_files/00.cover.jpg" />
-      <img class="page" src="./test_files/01.jpg" />
+        <div id="drag-file">
+          </div>
+      <img class="page" id="page-one" src="./test_files/00.cover.jpg" />
+      <img class="page" id="page-two" src="./test_files/01.jpg" />
     </div>
     <script>
       // You can also require other files to run in this process

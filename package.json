@@ -9,5 +9,9 @@
   "keywords": [],
   "devDependencies": {
     "electron": "^4.1.4"
+  },
+  "dependencies": {
+    "unrar": "^0.1.7",
+    "unzip": "^0.1.11"
   }
 }

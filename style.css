@@ -14,7 +14,7 @@
     -webkit-app-region: drag;
 }
 
-html, body, .page-holder {
+html, body, .page-holder, #drag-file {
     height: 100%;
     width: 100%;
 }
@@ -23,4 +23,10 @@ html, body {
     margin: 0;
     padding: 0;
     overflow: hidden;
+}
+
+#drag-file {
+    position: absolute;
+    opacity: 0;
+    z-index: 5;
 }
