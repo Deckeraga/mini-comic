@@ -4,6 +4,8 @@
 
 const { remote, BrowserWindow } = require('electron');
 const currentWindow = remote.getCurrentWindow();
+var Unrar = require('unrar');
+var archive = new Unrar('archive.rar');
 
 // Set up Dnd
 (function () {
@@ -14,20 +16,39 @@ const currentWindow = remote.getCurrentWindow();
 
         for (let file of e.dataTransfer.files) {
             console.log('Files: ', file.path)
-            fs.createReadStream(file.path).pipe(unzip.Extract({ path: '~/Desktop' }));
+            if (getExtension("cbz"))
+            {
+                fs.createReadStream(file.path).pipe(unzip.Extract({ path: '~/Desktop' }));
+            }
+
+            if (getExtension("cbr"))
+            {
+
+            }
         }
 
         return false;
     };
 })();
 
-document.querySelector('#single-page').addEventListener('click', () => {
-    document.querySelector('#page-two').style.display = 'none';
-    currentWindow.setAspectRatio(9/16);
+function getExtension(filename) {
+    var i = filename.lastIndexOf('.');
+    return (i < 0) ? '' : filename.substr(i);
+}
+
+function nextPage() {
+    // TODO
+}
+
+function prevPage() {
+    // TODO
+}
+
+document.querySelector('#forward').addEventListener('click', () => {
+    nextPage();
 });
 
-document.querySelector('#double-page').addEventListener('click', () => {
-    document.querySelector('#page-two').style.display = '';
-    currentWindow.setAspectRatio(21/16);
+document.querySelector('#back').addEventListener('click', () => {
+    prevPage();
 });
 

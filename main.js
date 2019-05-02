@@ -22,7 +22,7 @@ function createWindow () {
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
 
-  mainWindow.setAspectRatio(21/16);
+  mainWindow.setAspectRatio(9/16);
   
   // Open the DevTools.
   mainWindow.webContents.openDevTools()
