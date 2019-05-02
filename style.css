@@ -2,21 +2,25 @@
     height: 100%;
     user-drag: none; 
     user-select: none;
-    -moz-user-select: none;
     -webkit-user-drag: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
 }
 
-.toolbar {
-    height: 40px;
-    background-color: #1e1e1e;
-    -webkit-app-region: drag;
+.button-holder {
+    z-index: 10;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: none;
+}
+
+html:hover .button-holder {
+    display: block;
 }
 
 html, body, .page-holder, #drag-file {
     height: 100%;
     width: 100%;
+    -webkit-app-region: drag;
 }
 
 html, body {

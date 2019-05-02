@@ -10,9 +10,10 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     //height: 1050,
     //width: 800,
-    minHeight: 700,
-    minWidth: 700,
-    titleBarStyle: 'hiddenInset',
+    minHeight: 500,
+    minWidth: 500,
+    titleBarStyle: 'customButtonsOnHover', 
+    frame: false,
     // frame: false,
     webPreferences: {
       nodeIntegration: true
