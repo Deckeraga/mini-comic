@@ -5,14 +5,31 @@
 const { remote, BrowserWindow } = require('electron');
 const currentWindow = remote.getCurrentWindow();
 var Unrar = require('unrar');
+var temp = require('temp');
 var archive = new Unrar('archive.rar');
 
 const LEFT_ARROW = "ArrowLeft";
 const RIGHT_ARROW = "ArrowRight";
 
+// Current page
 var currentPage = 0;
 
-// Set up Dnd
+// List of image references
+var pageList = new Array();
+
+temp.track();
+
+// just for testing..
+const testFolder = './test_files/';
+const fs = require('fs');
+
+fs.readdirSync(testFolder).forEach(file => {
+  console.log(file);
+  pageList.push(file);
+});
+//
+
+// Set up drag and drop
 (() => {
     var dndTarget = document.getElementById('drag-file');
 
@@ -34,27 +51,46 @@ var currentPage = 0;
     };
 })();
 
+// Utility to retrieve file extension
 function getExtension(filename) {
     var i = filename.lastIndexOf('.');
     return (i < 0) ? '' : filename.substr(i);
 }
 
+// Revert to previous page
 function nextPage() {
-    // TODO
-    console.log("next");
+    let newPage = Math.min(pageList.length - 1, currentPage + 1);
+    setPage(newPage);
 }
 
+// Advance to the next page
 function prevPage() {
-    // TODO
-    console.log("prev");
     let newPage = Math.max(0, currentPage - 1);
     setPage(newPage);
 }
 
+// Load current page and update index
 function setPage(thePage) {
-    currentPage = thePage
+    currentPage = thePage;
+    console.log("setting page: " + pageList[currentPage]);
+    document.querySelector('#page').src = "./test_files/" + pageList[currentPage];
+    onPageChange();
 }
 
+function onPageChange() {
+    if (currentWindow !== undefined) {
+        const img = document.querySelector("#page");
+        currentWindow.setAspectRatio(img.naturalWidth / img.naturalHeight);
+    }
+    recalculateSize();
+}
+
+function recalculateSize() {
+    //console.log("resizing");
+    //currentWindow.dispatchEvent(new Event('resize'));
+}
+
+// Button listeners
 document.querySelector('#forward').addEventListener('click', () => {
     nextPage();
 });
@@ -63,6 +99,7 @@ document.querySelector('#back').addEventListener('click', () => {
     prevPage();
 });
 
+// Key listeners
 document.addEventListener('keydown', event => {
     switch (event.key) {
         case LEFT_ARROW:
@@ -73,4 +110,6 @@ document.addEventListener('keydown', event => {
             break;
     }
 });
+
+setPage(0);
 

@@ -1,4 +1,5 @@
 # comics-reader
+Barebones reader for `.cbr` and `.cbz` comic book files.
 
 # Notes:
-- initially created from electron-quick-start stub. 
+- Initially created from electron-quick-start stub.
