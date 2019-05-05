@@ -13,9 +13,7 @@ function createWindow () {
     },
   })
 
-  mainWindow.loadFile('index.html')
-
-  mainWindow.setAspectRatio(9/16);
+  mainWindow.loadFile('index.html');
   
   // Open the DevTools.
   mainWindow.webContents.openDevTools()

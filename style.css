@@ -1,5 +1,4 @@
 .page {
-    height: 100%;
     user-drag: none; 
     user-select: none;
     -webkit-user-drag: none;
@@ -7,17 +6,16 @@
 
 .button-holder {
     z-index: 10;
-    position: absolute;
-    top: 5px;
-    right: 5px;
+    bottom: 5px;
     display: none;
+    width: 100%;
 }
 
 html:hover .button-holder {
-    display: block;
+    display: flex;
 }
 
-html, body, .page-holder, #drag-file {
+html, body, .page-holder {
     height: 100%;
     width: 100%;
     -webkit-app-region: drag;
@@ -27,10 +25,4 @@ html, body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-}
-
-#drag-file {
-    position: absolute;
-    opacity: 0;
-    z-index: 5;
 }

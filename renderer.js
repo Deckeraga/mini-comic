@@ -2,11 +2,12 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 
-const { remote, BrowserWindow } = require('electron');
+const remote = require('electron').remote;
 const currentWindow = remote.getCurrentWindow();
 var Unrar = require('unrar');
 var temp = require('temp');
-var archive = new Unrar('archive.rar');
+const unzip = require('unzip');
+const fs = require('fs');
 
 const LEFT_ARROW = "ArrowLeft";
 const RIGHT_ARROW = "ArrowRight";
@@ -20,36 +21,22 @@ var pageList = new Array();
 temp.track();
 
 // just for testing..
-const testFolder = './test_files/';
-const fs = require('fs');
+//const testFolder = './test_files/';
+var aDirectory = '';
 
-fs.readdirSync(testFolder).forEach(file => {
-  console.log(file);
-  pageList.push(file);
-});
-//
+document.ondragover = document.ondrop = (e) => {
+    e.preventDefault()
+}
 
-// Set up drag and drop
-(() => {
-    var dndTarget = document.getElementById('drag-file');
-
-    dndTarget.ondrop = (e) => {
-        e.preventDefault();
-
-        for (let file of e.dataTransfer.files) {
-            console.log('Files: ', file.path);
-
-            if (getExtension("cbz")) {
-                fs.createReadStream(file.path).pipe(unzip.Extract({ path: '~/Desktop' }));
-            }
-
-            if (getExtension("cbr")) {
-
-            }
-        }
-        return false;
-    };
-})();
+document.body.ondrop = (e) => {
+    e.preventDefault();
+    console.log("dropped");
+    for (let file of e.dataTransfer.files) {
+        console.log("loopin");
+        loadComic(file);
+        break;
+    }
+}
 
 // Utility to retrieve file extension
 function getExtension(filename) {
@@ -72,22 +59,18 @@ function prevPage() {
 // Load current page and update index
 function setPage(thePage) {
     currentPage = thePage;
-    console.log("setting page: " + pageList[currentPage]);
-    document.querySelector('#page').src = "./test_files/" + pageList[currentPage];
+    document.querySelector('#page').src = aDirectory + '/' + pageList[currentPage];
     onPageChange();
 }
 
 function onPageChange() {
-    if (currentWindow !== undefined) {
-        const img = document.querySelector("#page");
+    const img = document.querySelector("#page");
+    try{
         currentWindow.setAspectRatio(img.naturalWidth / img.naturalHeight);
-    }
-    recalculateSize();
-}
+    } catch{
 
-function recalculateSize() {
-    //console.log("resizing");
-    //currentWindow.dispatchEvent(new Event('resize'));
+    }
+    updatePageStatus();
 }
 
 // Button listeners
@@ -99,7 +82,7 @@ document.querySelector('#back').addEventListener('click', () => {
     prevPage();
 });
 
-// Key listeners
+// Keyboard listeners
 document.addEventListener('keydown', event => {
     switch (event.key) {
         case LEFT_ARROW:
@@ -111,5 +94,40 @@ document.addEventListener('keydown', event => {
     }
 });
 
-setPage(0);
+// Update the page status indicator
+function updatePageStatus() {
+    document.querySelector('#page-status').textContent = (currentPage + 1) + " / " + (pageList.length);
+}
+
+// Initialize a comic
+function loadComic(file) {
+    if (file != undefined)
+    {
+        const filepath = file.path;
+        const filename = file.name;
+
+        aDirectory = '/Users/alexanderdecker/Dev/electron-quick-start/temp/' + filename;
+
+        if (getExtension(filepath) == '.cbz') {
+            aDirectory = '/Users/alexanderdecker/Dev/electron-quick-start/temp/' + filename.replace('.cbz', '');
+            fs.createReadStream(filepath).pipe(unzip.Extract({ path: '/Users/alexanderdecker/Dev/electron-quick-start/temp/'}))
+        }
+
+        if (getExtension(filepath) == '.cbr') {
+            var archive = new Unrar(filepath);
+        }
+
+        fs.readdirSync(aDirectory).forEach(file => {
+            console.log(file);
+            pageList.push(file);
+        });
+        setPage(0);
+    }
+}
+
+//loadComic();
+
+const img = document.querySelector("#page");
+
+
 
