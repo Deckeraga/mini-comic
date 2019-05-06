@@ -26,3 +26,8 @@ html, body {
     padding: 0;
     overflow: hidden;
 }
+
+#no-comic-text {
+    border-width: 5px !important;
+    border-style: dashed !important;
+}

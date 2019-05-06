@@ -7,13 +7,18 @@
     <link rel="stylesheet" type="text/css" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
   </head>
   <body>
-    <div class="button-holder position-absolute w-100 justify-content-center">
+    <div id="button-holder" class="button-holder position-absolute w-100 justify-content-center">
       <button class="btn btn-dark btn-sm m-1" id="back">&#8249;</button>
       <div class="badge badge-dark d-flex align-items-center my-1" id="page-status"></div>
       <button class="btn btn-dark btn-sm m-1" id="forward">&#8250;</button>
     </div>
-    <div class="page-holder">
+    <div id="page-holder" class="page-holder">
       <img class="page h-100" id="page" src="" />
+    </div>
+    <div id="no-comic" class="position-absolute h-100 w-100 bg-dark text-light p-3">
+      <div id="no-comic-text" class="border border-light w-100 h-100 text-center rounded p-3 d-flex align-items-center justify-content-center">
+        Drop a .cbz or .cbr to begin reading.
+      </div>
     </div>
     <script>
       require('./renderer.js');

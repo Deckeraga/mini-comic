@@ -4,8 +4,8 @@ let mainWindow;
 
 function createWindow () {
   mainWindow = new BrowserWindow({
-    minHeight: 500,
-    minWidth: 500,
+    minHeight: 200,
+    minWidth: 200,
     titleBarStyle: 'customButtonsOnHover', 
     frame: false,
     webPreferences: {
