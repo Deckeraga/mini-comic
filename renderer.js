@@ -20,19 +20,21 @@ var pageList = new Array();
 
 temp.track();
 
-// just for testing..
-//const testFolder = './test_files/';
-var aDirectory = '';
+// Directory for unzipped/rar'd comics
+var tempDirectory = temp.mkdirSync()
 
+// Sub Directory
+var aSubDirectory = '';
+
+// Drag handler
 document.ondragover = document.ondrop = (e) => {
     e.preventDefault()
 }
 
+// Drop handler
 document.body.ondrop = (e) => {
     e.preventDefault();
-    console.log("dropped");
     for (let file of e.dataTransfer.files) {
-        console.log("loopin");
         loadComic(file);
         break;
     }
@@ -59,9 +61,11 @@ function prevPage() {
 // Load current page and update index
 function setPage(thePage) {
     currentPage = thePage;
-    document.querySelector('#page').src = aDirectory + '/' + pageList[currentPage];
+    document.querySelector('#page').src = tempDirectory + aSubDirectory + '/' + pageList[currentPage];
     onPageChange();
+    updatePageStatus();
 }
+
 
 function onPageChange() {
     const img = document.querySelector("#page");
@@ -70,7 +74,6 @@ function onPageChange() {
     } catch{
 
     }
-    updatePageStatus();
 }
 
 // Button listeners
@@ -106,28 +109,32 @@ function loadComic(file) {
         const filepath = file.path;
         const filename = file.name;
 
-        aDirectory = '/Users/alexanderdecker/Dev/electron-quick-start/temp/' + filename;
-
         if (getExtension(filepath) == '.cbz') {
-            aDirectory = '/Users/alexanderdecker/Dev/electron-quick-start/temp/' + filename.replace('.cbz', '');
-            fs.createReadStream(filepath).pipe(unzip.Extract({ path: '/Users/alexanderdecker/Dev/electron-quick-start/temp/'}))
+            aSubDirectory = '/' + filename.replace('.cbz', '');
+            const aDirectory = tempDirectory + aSubDirectory;
+
+            fs.mkdirSync(aDirectory);
+            fs.createReadStream(filepath).pipe(unzip.Extract({ path: tempDirectory + "/"}));
+
+            pageList = [];
+            fs.readdirSync(aDirectory).forEach(file => {
+                console.log(file);
+                pageList.push(file);
+            });
+            setPage(0);
         }
 
         if (getExtension(filepath) == '.cbr') {
-            var archive = new Unrar(filepath);
-        }
+            // var archive = new Unrar(filepath);
 
-        fs.readdirSync(aDirectory).forEach(file => {
-            console.log(file);
-            pageList.push(file);
-        });
-        setPage(0);
+            // archive.list( (err, items) => {
+            //     pageList = [];
+            //     pageList = items;
+            //     setPage(0);
+            // });
+        }
     }
 }
-
-//loadComic();
-
-const img = document.querySelector("#page");
 
 
 
