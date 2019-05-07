@@ -48,13 +48,14 @@ function prevPage() {
 // Load current page and update index
 function setPage(thePage) {
     currentPage = thePage;
-    document.querySelector('#page').src = tempDirectory + aSubDirectory + '/' + pageList[currentPage];
+    const page: HTMLImageElement = document.querySelector('#page')
+    page.src = tempDirectory + aSubDirectory + '/' + pageList[currentPage];
     onPageChange();
     updatePageStatus();
 }
 
 function onPageChange() {
-    const img = document.querySelector("#page");
+    const img: HTMLImageElement = document.querySelector("#page");
     try{
         currentWindow.setAspectRatio(img.naturalWidth / img.naturalHeight);
     } catch{
@@ -113,22 +114,33 @@ function setMode(mode) {
     console.log("mode: " + mode);
     switch(mode) {
         case MODES.READER:
-            document.querySelector('#no-comic').style.display = "none";
-            document.querySelector('#page-holder').style.display = "";
-            document.querySelector('#button-holder').style.display = "";
+            getNoComic().style.display = "none";
+            getPageHolder().style.display = "";
+            getButtonHolder().style.display = "";
             break;
         case MODES.NOCOMIC:
-            document.querySelector('#no-comic').style.display = "";
-            document.querySelector('#page-holder').style.display = "none";
-            document.querySelector('#button-holder').style.display = "none";
+            getNoComic().style.display = "";
+            getPageHolder().style.display = "none";
+            getButtonHolder().style.display = "none";
             break;
     }
 }
 
+function getNoComic() : HTMLElement {
+    return document.querySelector('#no-comic');
+}
+
+function getPageHolder() : HTMLElement {
+    return document.querySelector('#page-holder');
+}
+
+function getButtonHolder() : HTMLElement {
+    return document.querySelector('#button-holder');
+}
+
 // Initialize and load a new comic
 function loadComic(file) {
-    if (file != undefined)
-    {
+    if (file != undefined) {
         const filepath = file.path;
         const filename = file.name;
 
@@ -136,8 +148,6 @@ function loadComic(file) {
         if (getExtension(filepath) == '.cbz') {
             aSubDirectory = '/' + filename.replace('.cbz', '');
             const aDirectory = tempDirectory + aSubDirectory;
-
-            debugger;
 
             if (fs.existsSync(aDirectory)) {
                 fs.rmdirSync(aDirectory);

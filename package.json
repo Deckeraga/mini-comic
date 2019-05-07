@@ -4,11 +4,13 @@
   "description": "A minimal Electron application",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "build": "tsc",
+    "start": "npm run build && electron ."
   },
   "keywords": [],
   "devDependencies": {
-    "electron": "^4.1.4"
+    "electron": "^4.1.4",
+    "typescript": "^3.4.5"
   },
   "dependencies": {
     "bootstrap": "^4.3.1",
