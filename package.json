@@ -5,11 +5,15 @@
   "main": "main.js",
   "scripts": {
     "build": "tsc",
+    "lint": "tslint -p tsconfig.json",
     "start": "npm run build && electron ."
   },
   "keywords": [],
   "devDependencies": {
     "electron": "^4.1.4",
+    "prettier": "^1.17.0",
+    "tslint": "^5.16.0",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.4.5"
   },
   "dependencies": {

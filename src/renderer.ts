@@ -1,52 +1,53 @@
-const remote = require('electron').remote;
+import { remote } from 'electron';
+import temp from 'temp';
+import unrar from 'unrar';
+import unzip from 'unzip';
+import * as fs from 'fs';
+
 const currentWindow = remote.getCurrentWindow();
-var Unrar = require('unrar');
-var temp = require('temp');
-const unzip = require('unzip');
-const fs = require('fs');
 
 const LEFT_ARROW = "ArrowLeft";
 const RIGHT_ARROW = "ArrowRight";
 
-const MODES = {
-    READER : 'reader',
-    NOCOMIC : 'nocomic'
-};
+enum Mode {
+    READER,
+    NOCOMIC
+}
 
 // Current page
-var currentPage = 0;
+let currentPage = 0;
 
 // List of image references
-var pageList = new Array();
+let pageList = new Array();
 
 temp.track();
 
 // Directory for unzipped/rar'd comics
-var tempDirectory = temp.mkdirSync()
+const tempDirectory = temp.mkdirSync()
 
 // Sub Directory
-var aSubDirectory = '';
+let aSubDirectory = '';
 
 // Utility to retrieve file extension
-function getExtension(filename) {
-    var i = filename.lastIndexOf('.');
+function getExtension(filename: string): string {
+    const i = filename.lastIndexOf('.');
     return (i < 0) ? '' : filename.substr(i);
 }
 
 // Revert to previous page
-function nextPage() {
-    let newPage = Math.min(pageList.length - 1, currentPage + 1);
+function nextPage(): void {
+    const newPage = Math.min(pageList.length - 1, currentPage + 1);
     setPage(newPage);
 }
 
 // Advance to the next page
-function prevPage() {
-    let newPage = Math.max(0, currentPage - 1);
+function prevPage(): void {
+    const newPage = Math.max(0, currentPage - 1);
     setPage(newPage);
 }
 
 // Load current page and update index
-function setPage(thePage) {
+function setPage(thePage): void {
     currentPage = thePage;
     const page: HTMLImageElement = document.querySelector('#page')
     page.src = tempDirectory + aSubDirectory + '/' + pageList[currentPage];
@@ -54,29 +55,29 @@ function setPage(thePage) {
     updatePageStatus();
 }
 
-function onPageChange() {
+function onPageChange(): void {
     const img: HTMLImageElement = document.querySelector("#page");
     try{
-        currentWindow.setAspectRatio(img.naturalWidth / img.naturalHeight);
-    } catch{
-
+        currentWindow.setAspectRatio(img.naturalWidth / img.naturalHeight, undefined);
+    } catch {
+        console.log("error");
     }
 }
 
 // Run on startup
-function init() {
+function init(): void {
     currentWindow.setSize(375, 210);
-    setMode(MODES.NOCOMIC);
+    setMode(Mode.NOCOMIC);
 
     // Drag handler
-    document.ondragover = document.ondrop = (e) => {
+    document.ondragover = document.ondrop = (e: DragEvent) => {
         e.preventDefault()
     }
 
     // Drop handler
-    document.body.ondrop = (e) => {
+    document.body.ondrop = (e: DragEvent) => {
         e.preventDefault();
-        for (let file of e.dataTransfer.files) {
+        for (const file of e.dataTransfer.files) {
             loadComic(file);
             break;
         }
@@ -92,7 +93,7 @@ function init() {
     });
 
     // Keyboard listeners
-    document.addEventListener('keydown', event => {
+    document.addEventListener('keydown', (event: KeyboardEvent) => {
         switch (event.key) {
             case LEFT_ARROW:
                 prevPage();
@@ -105,20 +106,19 @@ function init() {
 }
 
 // Update the page status indicator
-function updatePageStatus() {
+function updatePageStatus(): void {
     document.querySelector('#page-status').textContent = (currentPage + 1) + " / " + (pageList.length);
 }
 
 // Set application mode
-function setMode(mode) {
-    console.log("mode: " + mode);
+function setMode(mode : Mode): void {
     switch(mode) {
-        case MODES.READER:
+        case Mode.READER:
             getNoComic().style.display = "none";
             getPageHolder().style.display = "";
             getButtonHolder().style.display = "";
             break;
-        case MODES.NOCOMIC:
+        case Mode.NOCOMIC:
             getNoComic().style.display = "";
             getPageHolder().style.display = "none";
             getButtonHolder().style.display = "none";
@@ -139,13 +139,13 @@ function getButtonHolder() : HTMLElement {
 }
 
 // Initialize and load a new comic
-function loadComic(file) {
-    if (file != undefined) {
+function loadComic(file): void {
+    if (file !== undefined) {
         const filepath = file.path;
         const filename = file.name;
 
         // Handle .cbz (zipped comics)
-        if (getExtension(filepath) == '.cbz') {
+        if (getExtension(filepath) === '.cbz') {
             aSubDirectory = '/' + filename.replace('.cbz', '');
             const aDirectory = tempDirectory + aSubDirectory;
 
@@ -157,15 +157,12 @@ function loadComic(file) {
             fs.createReadStream(filepath).pipe(unzip.Extract({ path: tempDirectory + "/"}));
 
             pageList = [];
-            fs.readdirSync(aDirectory).forEach(file => {
-                console.log(file);
-                pageList.push(file);
-            });
+            fs.readdirSync(aDirectory).forEach(pageList.push);
             setPage(0);
         }
 
         // Handle .cbr (rarred comics)
-        if (getExtension(filepath) == '.cbr') {
+        if (getExtension(filepath) === '.cbr') {
             // var archive = new Unrar(filepath);
 
             // archive.list( (err, items) => {
@@ -174,7 +171,7 @@ function loadComic(file) {
             //     setPage(0);
             // });
         }
-        setMode(MODES.READER);
+        setMode(Mode.READER);
     }
 }
 
