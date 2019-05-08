@@ -1,7 +1,5 @@
-const {app, BrowserWindow, ipcMain} = require('electron')
+const {app, BrowserWindow} = require('electron')
 let mainWindow;
-
-let myLastRatio = 0;
 
 function createWindow () {
   mainWindow = new BrowserWindow({

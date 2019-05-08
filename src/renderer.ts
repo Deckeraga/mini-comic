@@ -2,9 +2,11 @@ import { remote } from "electron";
 import temp = require("temp");
 import unrar = require("node-unrar");
 import unzip = require("unzip");
+import rimraf = require("rimraf");
 import * as fs from "fs";
 
-const currentWindow = remote.getCurrentWindow();
+// Reference to application window
+const kCurrentWindow = remote.getCurrentWindow();
 
 // Constants for keyboard events
 const LEFT_ARROW = "ArrowLeft";
@@ -85,10 +87,13 @@ function setPage(thePage: number): void {
 function adjustWindowSize(): void {
   const aImg: HTMLImageElement = getPage();
 
-  currentWindow.setAspectRatio(aImg.naturalWidth / aImg.naturalHeight, undefined);
+  kCurrentWindow.setAspectRatio(
+    aImg.naturalWidth / aImg.naturalHeight,
+    undefined
+  );
 
   if (myLastRatio !== aImg.naturalWidth / aImg.naturalHeight) {
-    currentWindow.setSize(aImg.width, aImg.height);
+    kCurrentWindow.setSize(aImg.width, aImg.height);
     myLastRatio = aImg.naturalWidth / aImg.naturalHeight;
   }
 }
@@ -97,7 +102,7 @@ function adjustWindowSize(): void {
  * Initialize the application
  */
 function init(): void {
-  currentWindow.setSize(300, 300);
+  kCurrentWindow.setSize(300, 300);
   setMode(Mode.NOCOMIC);
 
   // Drag handler
@@ -115,13 +120,8 @@ function init(): void {
   };
 
   // Button listeners
-  document.querySelector("#forward").addEventListener("click", () => {
-    nextPage();
-  });
-
-  document.querySelector("#back").addEventListener("click", () => {
-    prevPage();
-  });
+  document.querySelector("#forward").addEventListener("click", nextPage);
+  document.querySelector("#back").addEventListener("click", prevPage);
 
   // Keyboard listeners
   document.addEventListener("keydown", (event: KeyboardEvent) => {
@@ -164,34 +164,6 @@ function setMode(theMode: Mode): void {
 }
 
 /**
- * Retrieve the currently displayed image
- */
-function getPage(): HTMLImageElement {
-  return document.querySelector("#page");
-}
-
-/**
- * Retrieve element displayed when no comic is being displayed
- */
-function getNoComic(): HTMLElement {
-  return document.querySelector("#no-comic");
-}
-
-/**
- * Retrieve page container element
- */
-function getPageHolder(): HTMLElement {
-  return document.querySelector("#page-holder");
-}
-
-/**
- * Retrieve control button container element
- */
-function getButtonHolder(): HTMLElement {
-  return document.querySelector("#button-holder");
-}
-
-/**
  * Initialize a fresh directory for the newly loaded comic
  * @param theSubDirectory the sub directory name
  */
@@ -201,7 +173,7 @@ function initComicDirectory(theSubDirectory: string): string {
   const aDir = getComicDirectory();
 
   if (fs.existsSync(aDir)) {
-    fs.rmdirSync(aDir);
+    rimraf.sync(aDir);
   }
   fs.mkdirSync(aDir);
 
@@ -244,6 +216,34 @@ function loadComic(theFile): void {
     }
     setMode(Mode.READER);
   }
+}
+
+/**
+ * Retrieve the currently displayed image
+ */
+function getPage(): HTMLImageElement {
+  return document.querySelector("#page");
+}
+
+/**
+ * Retrieve element displayed when no comic is being displayed
+ */
+function getNoComic(): HTMLElement {
+  return document.querySelector("#no-comic");
+}
+
+/**
+ * Retrieve page container element
+ */
+function getPageHolder(): HTMLElement {
+  return document.querySelector("#page-holder");
+}
+
+/**
+ * Retrieve control button container element
+ */
+function getButtonHolder(): HTMLElement {
+  return document.querySelector("#button-holder");
 }
 
 init();
