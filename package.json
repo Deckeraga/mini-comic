@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "bootstrap": "^4.3.1",
+    "node-unrar": "^0.1.5",
     "temp": "^0.9.0",
     "unrar": "^0.1.7",
     "unzip": "^0.1.11"

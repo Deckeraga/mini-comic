@@ -1,7 +1,7 @@
 import { remote } from 'electron';
-import temp from 'temp';
-import unrar from 'unrar';
-import unzip from 'unzip';
+import temp = require('temp');
+import unrar = require('node-unrar');
+import unzip = require('unzip');
 import * as fs from 'fs';
 
 const currentWindow = remote.getCurrentWindow();
@@ -152,29 +152,38 @@ function loadComic(file): void {
             if (fs.existsSync(aDirectory)) {
                 fs.rmdirSync(aDirectory);
             }
-
             fs.mkdirSync(aDirectory);
-            fs.createReadStream(filepath).pipe(unzip.Extract({ path: tempDirectory + "/"}));
 
             pageList = [];
-            fs.readdirSync(aDirectory).forEach(pageList.push);
-            setPage(0);
+
+            fs.createReadStream(filepath)
+                .pipe(unzip.Extract({ path: tempDirectory + "/"}))
+                .on('close', () => {
+                    fs.readdirSync(aDirectory).forEach((f) => pageList.push(f));
+                    setPage(0);
+                });
         }
 
-        // Handle .cbr (rarred comics)
         if (getExtension(filepath) === '.cbr') {
-            // var archive = new Unrar(filepath);
+            aSubDirectory = '/' + filename.replace('.cbr', '');
+            const aDirectory = tempDirectory + aSubDirectory;
 
-            // archive.list( (err, items) => {
-            //     pageList = [];
-            //     pageList = items;
-            //     setPage(0);
-            // });
+            if (fs.existsSync(aDirectory)) {
+                fs.rmdirSync(aDirectory);
+            }
+            fs.mkdirSync(aDirectory);
+
+            pageList = [];
+
+            var archive = new unrar(filepath);
+            
+            archive.extract(aDirectory, null, () => {
+                fs.readdirSync(aDirectory).forEach((f) => pageList.push(f));
+                setPage(0);
+            });
         }
         setMode(Mode.READER);
     }
 }
 
 init();
-
-
