@@ -1,11 +1,12 @@
-const {app, BrowserWindow} = require('electron')
-
+const {app, BrowserWindow, ipcMain} = require('electron')
 let mainWindow;
+
+let myLastRatio = 0;
 
 function createWindow () {
   mainWindow = new BrowserWindow({
-    minHeight: 200,
-    minWidth: 200,
+    //minHeight: 200,
+    //minWidth: 200,
     titleBarStyle: 'customButtonsOnHover', 
     frame: false,
     webPreferences: {
@@ -16,7 +17,7 @@ function createWindow () {
   mainWindow.loadFile('index.html');
   
   // Open the DevTools.
-  mainWindow.webContents.openDevTools()
+  //mainWindow.webContents.openDevTools()
 
   mainWindow.on('closed', function () {
     mainWindow = null

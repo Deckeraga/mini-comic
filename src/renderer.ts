@@ -6,74 +6,98 @@ import * as fs from "fs";
 
 const currentWindow = remote.getCurrentWindow();
 
+// Constants for keyboard events
 const LEFT_ARROW = "ArrowLeft";
 const RIGHT_ARROW = "ArrowRight";
 
+// Reader modes
 enum Mode {
   READER,
   NOCOMIC
 }
 
 // Current page
-let currentPage = 0;
+let myCurrentPage = 0;
 
 // List of image references
-let pageList = new Array();
+let myPageList = new Array();
 
+// Track temp directory
 temp.track();
 
 // Directory for unzipped/rar'd comics
-const tempDirectory = temp.mkdirSync();
+const kTempDirectory = temp.mkdirSync();
 
 // Sub Directory
-let aSubDirectory = "";
+let mySubDirectory = "";
 
+// Previous aspect ratio
+let myLastRatio = 0;
+
+/**
+ * Get the temp drectory where the currently loaded comic is stored
+ */
 function getComicDirectory(): string {
-  return tempDirectory + aSubDirectory.replace(/:$/, "");
+  return kTempDirectory + mySubDirectory.replace(/:$/, "");
 }
 
-// Utility to retrieve file extension
-function getExtension(filename: string): string {
-  const i = filename.lastIndexOf(".");
-  return i < 0 ? "" : filename.substr(i);
+/**
+ * Utility to retrieve file extension
+ */
+function getExtension(aFileName: string): string {
+  const i = aFileName.lastIndexOf(".");
+  return i < 0 ? "" : aFileName.substr(i);
 }
 
-// Revert to previous page
+/**
+ * Navigate to the next page
+ */
 function nextPage(): void {
-  const newPage = Math.min(pageList.length - 1, currentPage + 1);
-  setPage(newPage);
+  const aNewPage = Math.min(myPageList.length - 1, myCurrentPage + 1);
+  setPage(aNewPage);
 }
 
-// Advance to the next page
+/**
+ * Navigate to the previous page
+ */
 function prevPage(): void {
-  const newPage = Math.max(0, currentPage - 1);
-  setPage(newPage);
+  const aNewPage = Math.max(0, myCurrentPage - 1);
+  setPage(aNewPage);
 }
 
-// Load current page and update index
-function setPage(thePage): void {
-  currentPage = thePage;
-  const page: HTMLImageElement = document.querySelector("#page");
-  page.src = getComicDirectory() + "/" + pageList[currentPage];
-  onPageChange();
-  updatePageStatus();
+/**
+ * Set the current page and load it
+ * @param thePage
+ */
+function setPage(thePage: number): void {
+  myCurrentPage = thePage;
+  const aPage: HTMLImageElement = getPage();
+  aPage.src = getComicDirectory() + "/" + myPageList[myCurrentPage];
+  aPage.onload = () => {
+    adjustWindowSize();
+    updatePageStatus();
+  };
 }
 
-function onPageChange(): void {
-  const img: HTMLImageElement = document.querySelector("#page");
-  try {
-    currentWindow.setAspectRatio(
-      img.naturalWidth / img.naturalHeight,
-      undefined
-    );
-  } catch {
-    console.log("error");
+/**
+ * Calculate the proper window size and apply it
+ */
+function adjustWindowSize(): void {
+  const aImg: HTMLImageElement = getPage();
+
+  currentWindow.setAspectRatio(aImg.naturalWidth / aImg.naturalHeight, undefined);
+
+  if (myLastRatio !== aImg.naturalWidth / aImg.naturalHeight) {
+    currentWindow.setSize(aImg.width, aImg.height);
+    myLastRatio = aImg.naturalWidth / aImg.naturalHeight;
   }
 }
 
-// Run on startup
+/**
+ * Initialize the application
+ */
 function init(): void {
-  currentWindow.setSize(375, 210);
+  currentWindow.setSize(300, 300);
   setMode(Mode.NOCOMIC);
 
   // Drag handler
@@ -112,15 +136,20 @@ function init(): void {
   });
 }
 
-// Update the page status indicator
+/**
+ * Update the page indicator
+ */
 function updatePageStatus(): void {
   document.querySelector("#page-status").textContent =
-    currentPage + 1 + " / " + pageList.length;
+    myCurrentPage + 1 + " / " + myPageList.length;
 }
 
-// Set application mode
-function setMode(mode: Mode): void {
-  switch (mode) {
+/**
+ * Set and initialize the application mode
+ * @param theMode
+ */
+function setMode(theMode: Mode): void {
+  switch (theMode) {
     case Mode.READER:
       getNoComic().style.display = "none";
       getPageHolder().style.display = "";
@@ -134,47 +163,70 @@ function setMode(mode: Mode): void {
   }
 }
 
+/**
+ * Retrieve the currently displayed image
+ */
+function getPage(): HTMLImageElement {
+  return document.querySelector("#page");
+}
+
+/**
+ * Retrieve element displayed when no comic is being displayed
+ */
 function getNoComic(): HTMLElement {
   return document.querySelector("#no-comic");
 }
 
+/**
+ * Retrieve page container element
+ */
 function getPageHolder(): HTMLElement {
   return document.querySelector("#page-holder");
 }
 
+/**
+ * Retrieve control button container element
+ */
 function getButtonHolder(): HTMLElement {
   return document.querySelector("#button-holder");
 }
 
+/**
+ * Initialize a fresh directory for the newly loaded comic
+ * @param theSubDirectory the sub directory name
+ */
 function initComicDirectory(theSubDirectory: string): string {
-  aSubDirectory = "/" + theSubDirectory;
+  mySubDirectory = "/" + theSubDirectory;
 
-  const dir = getComicDirectory();
+  const aDir = getComicDirectory();
 
-  if (fs.existsSync(dir)) {
-    fs.rmdirSync(dir);
+  if (fs.existsSync(aDir)) {
+    fs.rmdirSync(aDir);
   }
-  fs.mkdirSync(dir);
+  fs.mkdirSync(aDir);
 
-  return dir;
+  return aDir;
 }
 
-// Initialize and load a new comic
-function loadComic(file): void {
-  if (file !== undefined) {
-    const filepath = file.path;
-    const filename = file.name;
+/**
+ * Load and initialize a new comic from a file
+ * @param theFile
+ */
+function loadComic(theFile): void {
+  if (theFile !== undefined) {
+    const filepath = theFile.path;
+    const filename = theFile.name;
 
-    pageList = [];
+    myPageList = [];
 
     // Handle .cbz (zipped comics)
     if (getExtension(filepath) === ".cbz") {
       const dir = initComicDirectory(filename.replace(".cbz", ""));
 
       fs.createReadStream(filepath)
-        .pipe(unzip.Extract({ path: tempDirectory + "/" }))
+        .pipe(unzip.Extract({ path: kTempDirectory + "/" }))
         .on("close", () => {
-          fs.readdirSync(dir).forEach(f => pageList.push(f));
+          fs.readdirSync(dir).forEach(f => myPageList.push(f));
           setPage(0);
         });
     }
@@ -186,7 +238,7 @@ function loadComic(file): void {
       const archive = new unrar(filepath);
 
       archive.extract(dir, null, () => {
-        fs.readdirSync(dir).forEach(f => pageList.push(f));
+        fs.readdirSync(dir).forEach(f => myPageList.push(f));
         setPage(0);
       });
     }
