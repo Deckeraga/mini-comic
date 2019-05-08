@@ -5,8 +5,6 @@ let myLastRatio = 0;
 
 function createWindow () {
   mainWindow = new BrowserWindow({
-    //minHeight: 200,
-    //minWidth: 200,
     titleBarStyle: 'customButtonsOnHover', 
     frame: false,
     webPreferences: {
