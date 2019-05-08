@@ -1,7 +1,8 @@
 import { remote } from "electron";
 import temp = require("temp");
-import unrar = require("node-unrar");
-import unzip = require("unzip");
+//import unrar = require("node-unrar");
+import unrar= require("electron-unrar-js");
+import unzip = require("unzipper");
 import rimraf = require("rimraf");
 import * as fs from "fs";
 
@@ -194,7 +195,6 @@ function loadComic(theFile): void {
     // Handle .cbz (zipped comics)
     if (getExtension(filepath) === ".cbz") {
       const dir = initComicDirectory(filename.replace(".cbz", ""));
-
       fs.createReadStream(filepath)
         .pipe(unzip.Extract({ path: kTempDirectory + "/" }))
         .on("close", () => {
@@ -207,12 +207,20 @@ function loadComic(theFile): void {
     if (getExtension(filepath) === ".cbr") {
       const dir = initComicDirectory(filename.replace(".cbr", ""));
 
-      const archive = new unrar(filepath);
+      // const archive = new unrar(filepath);
 
-      archive.extract(dir, null, () => {
-        fs.readdirSync(dir).forEach(f => myPageList.push(f));
-        setPage(0);
-      });
+      // archive.extract(dir, null, () => {
+      //   fs.readdirSync(dir).forEach(f => myPageList.push(f));
+      //   setPage(0);
+      // });
+
+      const extractor = unrar.createExtractorFromFile(filepath, kTempDirectory);
+      const extracted = extractor.extractAll();
+
+      console.log(getComicDirectory());
+
+      fs.readdirSync(dir).forEach(f => myPageList.push(f));
+      setPage(0);
     }
     setMode(Mode.READER);
   }

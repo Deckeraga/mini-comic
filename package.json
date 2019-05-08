@@ -4,6 +4,7 @@
   "description": "A minimal Electron application",
   "main": "main.js",
   "scripts": {
+    "package": "npm run build && electron-packager . --overwrite",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
@@ -12,6 +13,7 @@
   "keywords": [],
   "devDependencies": {
     "electron": "^4.1.4",
+    "electron-packager": "^13.1.1",
     "prettier": "^1.17.0",
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
@@ -19,10 +21,9 @@
   },
   "dependencies": {
     "bootstrap": "^4.3.1",
-    "node-unrar": "^0.1.5",
+    "electron-unrar-js": "^1.0.1",
     "rimraf": "^2.6.3",
     "temp": "^0.9.0",
-    "unrar": "^0.1.7",
-    "unzip": "^0.1.11"
+    "unzipper": "^0.9.11"
   }
 }
