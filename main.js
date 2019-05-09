@@ -63,7 +63,7 @@ function openFileDialog() {
     properties: [ 'openFile'], 
     filters: [{ name: 'comic', extensions: ['cbr', 'cbz'] }],
   }, 
-  function (files) {
+  (files) => {
     if (files !== undefined && files.length > 0) {
         mainWindow.webContents.send('open-file', files[0]);
     }
