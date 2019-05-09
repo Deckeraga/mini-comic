@@ -2,5 +2,5 @@ node_modules
 temp
 .DS_Store
 build
-comic-reader-darwin-x64
+mini-comic-darwin-x64
 notes.txt

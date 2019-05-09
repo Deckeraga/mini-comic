@@ -1,8 +1,9 @@
-import { remote } from "electron";
+import { remote, ipcRenderer } from "electron";
+import rimraf = require("rimraf");
 import temp = require("temp");
 import unrar = require("electron-unrar-js");
 import unzip = require("unzipper");
-import rimraf = require("rimraf");
+import path = require("path");
 import * as fs from "fs";
 
 // Reference to application window
@@ -30,41 +31,100 @@ temp.track();
 // Directory for unzipped/rar'd comics
 const kTempDirectory = temp.mkdirSync();
 
-// Sub Directory
+// Sub Directory for currently loaded comic
 let mySubDirectory = "";
 
 // Previous aspect ratio
 let myLastRatio = 0;
 
 /**
- * Get the temp drectory where the currently loaded comic is stored
+ * Initialize the application
  */
-function getComicDirectory(): string {
-  return kTempDirectory + mySubDirectory.replace(/:$/, "");
+function init(): void {
+  kCurrentWindow.setSize(300, 300);
+  setMode(Mode.NOCOMIC);
+
+  // Drag handler
+  document.ondragover = document.ondrop = (e: DragEvent) => {
+    e.preventDefault();
+  };
+
+  // Drop handler
+  document.body.ondrop = (e: DragEvent) => {
+    e.preventDefault();
+    for (const file of e.dataTransfer.files) {
+      loadComic(file.path);
+      break;
+    }
+  };
+
+  // Button listeners
+  getForwardButton().addEventListener("click", nextPage);
+  getBackButton().addEventListener("click", prevPage);
+
+  // Keyboard listeners
+  document.addEventListener("keydown", (event: KeyboardEvent) => {
+    switch (event.key) {
+      case LEFT_ARROW:
+        prevPage();
+        break;
+      case RIGHT_ARROW:
+        nextPage();
+        break;
+    }
+  });
 }
 
 /**
- * Utility to retrieve file extension
+ * Set and initialize the application mode
+ * @param theMode
  */
-function getExtension(aFileName: string): string {
-  const i = aFileName.lastIndexOf(".");
-  return i < 0 ? "" : aFileName.substr(i);
+function setMode(theMode: Mode): void {
+  switch (theMode) {
+    case Mode.READER:
+      getNoComic().style.display = "none";
+      getPageHolder().style.display = "";
+      getButtonHolder().style.display = "";
+      break;
+    case Mode.NOCOMIC:
+      getNoComic().style.display = "";
+      getPageHolder().style.display = "none";
+      getButtonHolder().style.display = "none";
+      break;
+  }
 }
 
 /**
- * Navigate to the next page
+ * Load and initialize a new comic from a file
+ * @param theFile
  */
-function nextPage(): void {
-  const aNewPage = Math.min(myPageList.length - 1, myCurrentPage + 1);
-  setPage(aNewPage);
-}
+function loadComic(theFilePath: string): void {
+  const aFileName = path.basename(theFilePath)
+  myPageList = [];
 
-/**
- * Navigate to the previous page
- */
-function prevPage(): void {
-  const aNewPage = Math.max(0, myCurrentPage - 1);
-  setPage(aNewPage);
+  // Handle .cbz (zipped comics)
+  if (getExtension(theFilePath) === ".cbz") {
+    const dir = initComicDirectory(aFileName.replace(".cbz", ""));
+    
+    fs.createReadStream(theFilePath)
+      .pipe(unzip.Extract({ path: kTempDirectory + "/" }))
+      .on("close", () => {
+        fs.readdirSync(dir).forEach(f => myPageList.push(f));
+        setPage(0);
+      });
+  }
+
+  // Handle .cbr (rarred comics)
+  if (getExtension(theFilePath) === ".cbr") {
+    const dir = initComicDirectory(aFileName.replace(".cbr", ""));
+
+    const extractor = unrar.createExtractorFromFile(theFilePath, kTempDirectory);
+    extractor.extractAll();
+
+    fs.readdirSync(dir).forEach(f => myPageList.push(f));
+    setPage(0);
+  }
+  setMode(Mode.READER);
 }
 
 /**
@@ -99,71 +159,6 @@ function adjustWindowSize(): void {
 }
 
 /**
- * Initialize the application
- */
-function init(): void {
-  kCurrentWindow.setSize(300, 300);
-  setMode(Mode.NOCOMIC);
-
-  // Drag handler
-  document.ondragover = document.ondrop = (e: DragEvent) => {
-    e.preventDefault();
-  };
-
-  // Drop handler
-  document.body.ondrop = (e: DragEvent) => {
-    e.preventDefault();
-    for (const file of e.dataTransfer.files) {
-      loadComic(file);
-      break;
-    }
-  };
-
-  // Button listeners
-  document.querySelector("#forward").addEventListener("click", nextPage);
-  document.querySelector("#back").addEventListener("click", prevPage);
-
-  // Keyboard listeners
-  document.addEventListener("keydown", (event: KeyboardEvent) => {
-    switch (event.key) {
-      case LEFT_ARROW:
-        prevPage();
-        break;
-      case RIGHT_ARROW:
-        nextPage();
-        break;
-    }
-  });
-}
-
-/**
- * Update the page indicator
- */
-function updatePageStatus(): void {
-  document.querySelector("#page-status").textContent =
-    myCurrentPage + 1 + " / " + myPageList.length;
-}
-
-/**
- * Set and initialize the application mode
- * @param theMode
- */
-function setMode(theMode: Mode): void {
-  switch (theMode) {
-    case Mode.READER:
-      getNoComic().style.display = "none";
-      getPageHolder().style.display = "";
-      getButtonHolder().style.display = "";
-      break;
-    case Mode.NOCOMIC:
-      getNoComic().style.display = "";
-      getPageHolder().style.display = "none";
-      getButtonHolder().style.display = "none";
-      break;
-  }
-}
-
-/**
  * Initialize a fresh directory for the newly loaded comic
  * @param theSubDirectory the sub directory name
  */
@@ -181,39 +176,62 @@ function initComicDirectory(theSubDirectory: string): string {
 }
 
 /**
- * Load and initialize a new comic from a file
- * @param theFile
+ * Get the temp drectory where the currently loaded comic is stored
  */
-function loadComic(theFile: File): void {
-  if (theFile !== undefined) {
-    const filepath = theFile.path;
-    const filename = theFile.name;
+function getComicDirectory(): string {
+  return kTempDirectory + mySubDirectory.replace(/:$/, "");
+}
 
-    myPageList = [];
+/**
+ * Update the page indicator
+ */
+function updatePageStatus(): void {
+  getPageStatus().textContent = myCurrentPage + 1 + " / " + myPageList.length;
+}
 
-    // Handle .cbz (zipped comics)
-    if (getExtension(filepath) === ".cbz") {
-      const dir = initComicDirectory(filename.replace(".cbz", ""));
-      fs.createReadStream(filepath)
-        .pipe(unzip.Extract({ path: kTempDirectory + "/" }))
-        .on("close", () => {
-          fs.readdirSync(dir).forEach(f => myPageList.push(f));
-          setPage(0);
-        });
-    }
+/**
+ * Navigate to the next page
+ */
+function nextPage(): void {
+  const aNewPage = Math.min(myPageList.length - 1, myCurrentPage + 1);
+  setPage(aNewPage);
+}
 
-    // Handle .cbr (rarred comics)
-    if (getExtension(filepath) === ".cbr") {
-      const dir = initComicDirectory(filename.replace(".cbr", ""));
+/**
+ * Navigate to the previous page
+ */
+function prevPage(): void {
+  const aNewPage = Math.max(0, myCurrentPage - 1);
+  setPage(aNewPage);
+}
 
-      const extractor = unrar.createExtractorFromFile(filepath, kTempDirectory);
-      extractor.extractAll();
+/**
+ * Utility to retrieve file extension
+ */
+function getExtension(aFileName: string): string {
+  const i = aFileName.lastIndexOf(".");
+  return i < 0 ? "" : aFileName.substr(i);
+}
 
-      fs.readdirSync(dir).forEach(f => myPageList.push(f));
-      setPage(0);
-    }
-    setMode(Mode.READER);
-  }
+/**
+ * Retrieve page status element
+ */
+function getPageStatus(): HTMLElement {
+  return document.querySelector("#page-status");
+}
+
+/**
+ * Retrieve the forward button element
+ */
+function getForwardButton(): HTMLElement {
+  return document.querySelector("#forward");
+}
+
+/**
+ * Retrieve the back button element
+ */
+function getBackButton(): HTMLElement {
+  return document.querySelector("#back");
 }
 
 /**
@@ -243,5 +261,12 @@ function getPageHolder(): HTMLElement {
 function getButtonHolder(): HTMLElement {
   return document.querySelector("#button-holder");
 }
+
+/**
+ * Handle file from File -> Open menu
+ */
+ipcRenderer.on("open-file", (_event: any, theFilePath: string) => {
+  loadComic(theFilePath);
+});
 
 init();
