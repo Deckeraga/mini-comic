@@ -6,7 +6,7 @@
   "author": "Alec Decker",
   "license": "MIT",
   "scripts": {
-    "package": "npm run build && electron-packager . --overwrite",
+    "package": "npm run build && electron-packager . --overwrite --icon=icons/icon.icns",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",

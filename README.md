@@ -1,7 +1,7 @@
-# mini-comic
+# <img src="images/logo.png" height="64">
 Barebones reader for `.cbr` and `.cbz` comic book files.
 
-![demo_img](demo/demo_img.gif?raw=true "Demo")
+![demo_img](images/demo_img.gif?raw=true "Demo")
 
 # Notes:
 - Only tested on macOS.

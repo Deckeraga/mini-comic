@@ -96,7 +96,7 @@ function setMode(theMode: Mode): void {
 
 /**
  * Load and initialize a new comic from a file
- * @param theFile
+ * @param theFilePath 
  */
 function loadComic(theFilePath: string): void {
   const aFileName = path.basename(theFilePath)
@@ -105,7 +105,7 @@ function loadComic(theFilePath: string): void {
   // Handle .cbz (zipped comics)
   if (getExtension(theFilePath) === ".cbz") {
     const dir = initComicDirectory(aFileName.replace(".cbz", ""));
-    
+
     fs.createReadStream(theFilePath)
       .pipe(unzip.Extract({ path: kTempDirectory + "/" }))
       .on("close", () => {
@@ -207,10 +207,11 @@ function prevPage(): void {
 
 /**
  * Utility to retrieve file extension
+ * @param theFileName
  */
-function getExtension(aFileName: string): string {
-  const i = aFileName.lastIndexOf(".");
-  return i < 0 ? "" : aFileName.substr(i);
+function getExtension(theFileName: string): string {
+  const i = theFileName.lastIndexOf(".");
+  return i < 0 ? "" : theFileName.substr(i);
 }
 
 /**
