@@ -96,10 +96,10 @@ function setMode(theMode: Mode): void {
 
 /**
  * Load and initialize a new comic from a file
- * @param theFilePath 
+ * @param theFilePath
  */
 function loadComic(theFilePath: string): void {
-  const aFileName = path.basename(theFilePath)
+  const aFileName = path.basename(theFilePath);
   myPageList = [];
 
   // Handle .cbz (zipped comics)
@@ -118,7 +118,10 @@ function loadComic(theFilePath: string): void {
   if (getExtension(theFilePath) === ".cbr") {
     const dir = initComicDirectory(aFileName.replace(".cbr", ""));
 
-    const extractor = unrar.createExtractorFromFile(theFilePath, kTempDirectory);
+    const extractor = unrar.createExtractorFromFile(
+      theFilePath,
+      kTempDirectory
+    );
     extractor.extractAll();
 
     fs.readdirSync(dir).forEach(f => myPageList.push(f));
@@ -266,7 +269,7 @@ function getButtonHolder(): HTMLElement {
 /**
  * Handle file from File -> Open menu
  */
-ipcRenderer.on("open-file", (_event: any, theFilePath: string) => {
+ipcRenderer.on("open-file", (_: any, theFilePath: string) => {
   loadComic(theFilePath);
 });
 
