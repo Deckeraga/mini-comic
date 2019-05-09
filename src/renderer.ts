@@ -1,7 +1,6 @@
 import { remote } from "electron";
 import temp = require("temp");
-//import unrar = require("node-unrar");
-import unrar= require("electron-unrar-js");
+import unrar = require("electron-unrar-js");
 import unzip = require("unzipper");
 import rimraf = require("rimraf");
 import * as fs from "fs";
@@ -23,7 +22,7 @@ enum Mode {
 let myCurrentPage = 0;
 
 // List of image references
-let myPageList = new Array();
+let myPageList = new Array<string>();
 
 // Track temp directory
 temp.track();
@@ -185,7 +184,7 @@ function initComicDirectory(theSubDirectory: string): string {
  * Load and initialize a new comic from a file
  * @param theFile
  */
-function loadComic(theFile): void {
+function loadComic(theFile: File): void {
   if (theFile !== undefined) {
     const filepath = theFile.path;
     const filename = theFile.name;
@@ -207,17 +206,8 @@ function loadComic(theFile): void {
     if (getExtension(filepath) === ".cbr") {
       const dir = initComicDirectory(filename.replace(".cbr", ""));
 
-      // const archive = new unrar(filepath);
-
-      // archive.extract(dir, null, () => {
-      //   fs.readdirSync(dir).forEach(f => myPageList.push(f));
-      //   setPage(0);
-      // });
-
       const extractor = unrar.createExtractorFromFile(filepath, kTempDirectory);
-      const extracted = extractor.extractAll();
-
-      console.log(getComicDirectory());
+      extractor.extractAll();
 
       fs.readdirSync(dir).forEach(f => myPageList.push(f));
       setPage(0);

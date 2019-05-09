@@ -1,8 +1,10 @@
 {
-  "name": "comic-reader",
+  "name": "mini-comic",
   "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "description": "A barebones comic book reader in electron.",
   "main": "main.js",
+  "author": "Alec Decker",
+  "license": "MIT",
   "scripts": {
     "package": "npm run build && electron-packager . --overwrite",
     "build": "tsc",
