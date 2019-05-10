@@ -1,17 +1,17 @@
-import { remote, ipcRenderer } from "electron";
-import rimraf = require("rimraf");
-import temp = require("temp");
-import unrar = require("electron-unrar-js");
-import unzip = require("unzipper");
-import path = require("path");
-import * as fs from "fs";
+import { remote, ipcRenderer } from 'electron';
+import rimraf = require('rimraf');
+import temp = require('temp');
+import unrar = require('electron-unrar-js');
+import unzip = require('unzipper');
+import path = require('path');
+import * as fs from 'fs';
 
 // Reference to application window
 const kCurrentWindow = remote.getCurrentWindow();
 
 // Constants for keyboard events
-const LEFT_ARROW = "ArrowLeft";
-const RIGHT_ARROW = "ArrowRight";
+const LEFT_ARROW = 'ArrowLeft';
+const RIGHT_ARROW = 'ArrowRight';
 
 // Reader modes
 enum Mode {
@@ -32,7 +32,7 @@ temp.track();
 const kTempDirectory = temp.mkdirSync();
 
 // Sub Directory for currently loaded comic
-let mySubDirectory = "";
+let mySubDirectory = '';
 
 // Previous aspect ratio
 let myLastRatio = 0;
@@ -59,11 +59,11 @@ function init(): void {
   };
 
   // Button listeners
-  getForwardButton().addEventListener("click", nextPage);
-  getBackButton().addEventListener("click", prevPage);
+  getForwardButton().addEventListener('click', nextPage);
+  getBackButton().addEventListener('click', prevPage);
 
   // Keyboard listeners
-  document.addEventListener("keydown", (event: KeyboardEvent) => {
+  document.addEventListener('keydown', (event: KeyboardEvent) => {
     switch (event.key) {
       case LEFT_ARROW:
         prevPage();
@@ -82,14 +82,14 @@ function init(): void {
 function setMode(theMode: Mode): void {
   switch (theMode) {
     case Mode.READER:
-      getNoComic().style.display = "none";
-      getPageHolder().style.display = "";
-      getButtonHolder().style.display = "";
+      getNoComic().style.display = 'none';
+      getPageHolder().style.display = '';
+      getButtonHolder().style.display = '';
       break;
     case Mode.NOCOMIC:
-      getNoComic().style.display = "";
-      getPageHolder().style.display = "none";
-      getButtonHolder().style.display = "none";
+      getNoComic().style.display = '';
+      getPageHolder().style.display = 'none';
+      getButtonHolder().style.display = 'none';
       break;
   }
 }
@@ -103,25 +103,22 @@ function loadComic(theFilePath: string): void {
   myPageList = [];
 
   // Handle .cbz (zipped comics)
-  if (getExtension(theFilePath) === ".cbz") {
-    const dir = initComicDirectory(aFileName.replace(".cbz", ""));
+  if (getExtension(theFilePath) === '.cbz') {
+    const dir = initComicDirectory(aFileName.replace('.cbz', ''));
 
     fs.createReadStream(theFilePath)
-      .pipe(unzip.Extract({ path: kTempDirectory + "/" }))
-      .on("close", () => {
+      .pipe(unzip.Extract({ path: kTempDirectory + '/' }))
+      .on('close', () => {
         fs.readdirSync(dir).forEach(f => myPageList.push(f));
         setPage(0);
       });
   }
 
   // Handle .cbr (rarred comics)
-  if (getExtension(theFilePath) === ".cbr") {
-    const dir = initComicDirectory(aFileName.replace(".cbr", ""));
+  if (getExtension(theFilePath) === '.cbr') {
+    const dir = initComicDirectory(aFileName.replace('.cbr', ''));
 
-    const extractor = unrar.createExtractorFromFile(
-      theFilePath,
-      kTempDirectory
-    );
+    const extractor = unrar.createExtractorFromFile(theFilePath, kTempDirectory);
     extractor.extractAll();
 
     fs.readdirSync(dir).forEach(f => myPageList.push(f));
@@ -137,7 +134,7 @@ function loadComic(theFilePath: string): void {
 function setPage(thePage: number): void {
   myCurrentPage = thePage;
   const aPage: HTMLImageElement = getPage();
-  aPage.src = getComicDirectory() + "/" + myPageList[myCurrentPage];
+  aPage.src = getComicDirectory() + '/' + myPageList[myCurrentPage];
   aPage.onload = () => {
     adjustWindowSize();
     updatePageStatus();
@@ -150,10 +147,7 @@ function setPage(thePage: number): void {
 function adjustWindowSize(): void {
   const aImg: HTMLImageElement = getPage();
 
-  kCurrentWindow.setAspectRatio(
-    aImg.naturalWidth / aImg.naturalHeight,
-    undefined
-  );
+  kCurrentWindow.setAspectRatio(aImg.naturalWidth / aImg.naturalHeight, undefined);
 
   if (myLastRatio !== aImg.naturalWidth / aImg.naturalHeight) {
     kCurrentWindow.setSize(aImg.width, aImg.height);
@@ -166,7 +160,7 @@ function adjustWindowSize(): void {
  * @param theSubDirectory the sub directory name
  */
 function initComicDirectory(theSubDirectory: string): string {
-  mySubDirectory = "/" + theSubDirectory;
+  mySubDirectory = '/' + theSubDirectory;
 
   const aDir = getComicDirectory();
 
@@ -182,14 +176,14 @@ function initComicDirectory(theSubDirectory: string): string {
  * Get the temp drectory where the currently loaded comic is stored
  */
 function getComicDirectory(): string {
-  return kTempDirectory + mySubDirectory.replace(/:$/, "");
+  return kTempDirectory + mySubDirectory.replace(/:$/, '');
 }
 
 /**
  * Update the page indicator
  */
 function updatePageStatus(): void {
-  getPageStatus().textContent = myCurrentPage + 1 + " / " + myPageList.length;
+  getPageStatus().textContent = myCurrentPage + 1 + ' / ' + myPageList.length;
 }
 
 /**
@@ -213,63 +207,63 @@ function prevPage(): void {
  * @param theFileName
  */
 function getExtension(theFileName: string): string {
-  const i = theFileName.lastIndexOf(".");
-  return i < 0 ? "" : theFileName.substr(i);
+  const i = theFileName.lastIndexOf('.');
+  return i < 0 ? '' : theFileName.substr(i);
 }
 
 /**
  * Retrieve page status element
  */
 function getPageStatus(): HTMLElement {
-  return document.querySelector("#page-status");
+  return document.querySelector('#page-status');
 }
 
 /**
  * Retrieve the forward button element
  */
 function getForwardButton(): HTMLElement {
-  return document.querySelector("#forward");
+  return document.querySelector('#forward');
 }
 
 /**
  * Retrieve the back button element
  */
 function getBackButton(): HTMLElement {
-  return document.querySelector("#back");
+  return document.querySelector('#back');
 }
 
 /**
  * Retrieve the currently displayed image
  */
 function getPage(): HTMLImageElement {
-  return document.querySelector("#page");
+  return document.querySelector('#page');
 }
 
 /**
  * Retrieve element displayed when no comic is being displayed
  */
 function getNoComic(): HTMLElement {
-  return document.querySelector("#no-comic");
+  return document.querySelector('#no-comic');
 }
 
 /**
  * Retrieve page container element
  */
 function getPageHolder(): HTMLElement {
-  return document.querySelector("#page-holder");
+  return document.querySelector('#page-holder');
 }
 
 /**
  * Retrieve control button container element
  */
 function getButtonHolder(): HTMLElement {
-  return document.querySelector("#button-holder");
+  return document.querySelector('#button-holder');
 }
 
 /**
  * Handle file from File -> Open menu
  */
-ipcRenderer.on("open-file", (_: any, theFilePath: string) => {
+ipcRenderer.on('open-file', (_: any, theFilePath: string) => {
   loadComic(theFilePath);
 });
 
