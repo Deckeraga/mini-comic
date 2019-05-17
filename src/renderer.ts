@@ -194,7 +194,6 @@ function updatePageStatus(): void {
   getCurrentPageElement().setAttribute('min', '' + (myCurrentPage + 1));
   getCurrentPageElement().setAttribute('max', '' + myPageList.length);
   getCurrentPageElement().value = '' + (myCurrentPage + 1);
-
   getTotalPageElement().textContent = '' + myPageList.length;
 }
 
