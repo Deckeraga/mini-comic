@@ -62,6 +62,14 @@ function init(): void {
   getForwardButton().addEventListener('click', nextPage);
   getBackButton().addEventListener('click', prevPage);
 
+  getCurrentPageElement().onchange = () => setPage(parseInt(getCurrentPageElement().value, 10) - 1);
+  getCurrentPageElement().onkeydown = e => e.stopPropagation();
+
+  getCurrentPageElement().onclick = () => {
+    getCurrentPageElement().focus();
+    getCurrentPageElement().select();
+  };
+
   // Keyboard listeners
   document.addEventListener('keydown', (event: KeyboardEvent) => {
     switch (event.key) {
@@ -132,7 +140,7 @@ function loadComic(theFilePath: string): void {
  * @param thePage
  */
 function setPage(thePage: number): void {
-  myCurrentPage = thePage;
+  myCurrentPage = Math.min(Math.max(thePage, 0), myPageList.length - 1);
   const aPage: HTMLImageElement = getPage();
   aPage.src = getComicDirectory() + '/' + myPageList[myCurrentPage];
   aPage.onload = () => {
@@ -183,7 +191,11 @@ function getComicDirectory(): string {
  * Update the page indicator
  */
 function updatePageStatus(): void {
-  getPageStatus().textContent = myCurrentPage + 1 + ' / ' + myPageList.length;
+  getCurrentPageElement().setAttribute('min', '' + (myCurrentPage + 1));
+  getCurrentPageElement().setAttribute('max', '' + myPageList.length);
+  getCurrentPageElement().value = '' + (myCurrentPage + 1);
+
+  getTotalPageElement().textContent = '' + myPageList.length;
 }
 
 /**
@@ -212,10 +224,17 @@ function getExtension(theFileName: string): string {
 }
 
 /**
- * Retrieve page status element
+ * Retrieve current page status element
  */
-function getPageStatus(): HTMLElement {
-  return document.querySelector('#page-status');
+function getCurrentPageElement(): HTMLInputElement {
+  return document.querySelector('#current-page');
+}
+
+/**
+ * Retrieve total page status element
+ */
+function getTotalPageElement(): HTMLElement {
+  return document.querySelector('#total-page');
 }
 
 /**

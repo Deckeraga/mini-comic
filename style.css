@@ -5,6 +5,7 @@
 }
 
 .button-holder {
+    -webkit-app-region: no-drag;
     z-index: 10;
     bottom: 5px;
     display: none;
@@ -30,4 +31,15 @@ html, body {
 #no-comic-text {
     border-width: 5px !important;
     border-style: dashed !important;
+}
+
+#current-page {
+    border: 0;
+    text-align: right;
+    -webkit-app-region: no-drag;
+}
+
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
